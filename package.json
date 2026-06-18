@@ -1,0 +1,14 @@
+{
+  "name": "ap-monitor",
+  "version": "1.0.0",
+  "description": "Monitoring ping Access Point NOZ.ID via MikroTik API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "better-sqlite3": "^11.3.0",
+    "node-routeros": "^1.6.8"
+  }
+}
