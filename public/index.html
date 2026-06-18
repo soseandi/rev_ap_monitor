@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NOZ.ID — AP Monitor</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app" id="app">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">
+      <div class="mark">N</div>
+      <div class="txt"><b id="brandName">NOZ.ID</b><span id="brandSub">AP Monitor</span></div>
+    </div>
+    <nav class="nav">
+      <div class="sec">Monitoring</div>
+      <a class="active" data-view="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+        Dashboard
+      </a>
+      <a data-view="map">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+        Peta Akses Point
+      </a>
+      <div class="sec">Pengelolaan</div>
+      <a data-view="aps">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12" y2="20"/></svg>
+        Access Point
+      </a>
+      <a data-view="areas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Wilayah
+      </a>
+    </nav>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="greet">
+        <h1 id="greetTitle">Selamat datang</h1>
+        <p>Pantau status koneksi access point Anda secara langsung</p>
+      </div>
+      <div class="search">
+        <input type="text" id="search" placeholder="Cari nama / IP...">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+      </div>
+      <div class="live"><span class="dot"></span> Live</div>
+    </header>
+
+    <div class="content">
+      <!-- Stat cards -->
+      <div class="stats">
+        <div class="stat up">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><div class="num" id="cUp">0</div><div class="lbl">Online</div></div>
+        </div>
+        <div class="stat down">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+          <div><div class="num" id="cDown">0</div><div class="lbl">Offline</div></div>
+        </div>
+        <div class="stat unk">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="8"/></svg></div>
+          <div><div class="num" id="cUnk">0</div><div class="lbl">Belum dicek</div></div>
+        </div>
+        <div class="stat dis">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg></div>
+          <div><div class="num" id="cDis">0</div><div class="lbl">Nonaktif</div></div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <!-- Ping + filter -->
+        <div class="card">
+          <div class="head"><h2>Jalankan Ping</h2></div>
+          <div class="body">
+            <label>Mode pengecekan</label>
+            <select id="pingMode">
+              <option value="all">Semua AP aktif</option>
+              <option value="site">Per Site</option>
+              <option value="area">Per Wilayah</option>
+              <option value="ap">Satu AP</option>
+            </select>
+            <div id="pingTargetWrap" style="display:none">
+              <label id="pingTargetLabel">Target</label>
+              <select id="pingTarget"></select>
+            </div>
+            <div class="ping-actions">
+              <button class="btn-green btn-block" id="btnPing">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Mulai Ping
+              </button>
+              <button class="btn-ghost btn-block btn-sm" id="btnPingDown">Ping ulang yang offline</button>
+            </div>
+            <div class="progress-wrap" id="progress">
+              <div class="bar"><i id="progBar"></i></div>
+              <div class="lbl" id="progLbl">0 / 0</div>
+            </div>
+
+            <hr style="border:none;border-top:1px solid var(--line);margin:18px 0">
+            <label>Filter tampilan</label>
+            <div class="row">
+              <select id="fSite"><option value="">Semua site</option></select>
+              <select id="fArea"><option value="">Semua wilayah</option></select>
+            </div>
+          </div>
+        </div>
+
+        <!-- AP table -->
+        <div class="card">
+          <div class="head">
+            <h2>Daftar Access Point</h2>
+            <div class="actions">
+              <a href="template_ap.xlsx" download class="btn-ghost btn-sm" style="text-decoration:none">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Template
+              </a>
+              <button class="btn-ghost btn-sm" id="btnImport">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Import Excel
+              </button>
+              <input type="file" id="importFile" accept=".xlsx,.xls" style="display:none">
+              <button class="btn-blue btn-sm" id="btnAdd">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Tambah AP
+              </button>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Access Point</th><th>Wilayah</th><th>Status</th><th>RTT</th><th></th></tr></thead>
+              <tbody id="apBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Map -->
+      <div class="card map-card">
+        <div class="head"><h2>Peta Sebaran Access Point</h2></div>
+        <div class="map-wrap">
+          <div class="map-hint" id="mapHint">Klik di peta untuk menetapkan koordinat</div>
+          <div id="map"></div>
+        </div>
+      </div>
+
+      <!-- Areas -->
+      <div class="card" style="margin-top:16px">
+        <div class="head"><h2>Kelola Wilayah</h2></div>
+        <div class="body">
+          <div class="row">
+            <select id="areaSite"></select>
+            <input type="text" id="areaName" placeholder="Nama wilayah baru">
+            <button class="btn-blue btn-sm" id="btnAddArea" style="flex:0 0 auto">Tambah</button>
+          </div>
+          <div class="area-list" id="areaList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal AP -->
+<div class="overlay" id="apModal">
+  <div class="modal">
+    <div class="modal-head"><h3 id="apModalTitle">Tambah Access Point</h3><button class="icon-btn" id="apModalClose">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="apId">
+      <label>Nama AP</label>
+      <input type="text" id="apName" placeholder="mis. AP-Pasar-01">
+      <div class="row">
+        <div><label>Site</label><select id="apSite"></select></div>
+        <div><label>Wilayah</label><select id="apArea"></select></div>
+      </div>
+      <label>IP Address</label>
+      <input type="text" id="apIp" placeholder="192.168.x.x">
+      <label>Koordinat (klik peta atau isi manual)</label>
+      <div class="row"><input type="text" id="apLat" placeholder="Latitude"><input type="text" id="apLng" placeholder="Longitude"></div>
+      <div class="mini-map" id="miniMap"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-red" id="apDelete" style="display:none; margin-right:auto">Hapus</button>
+      <button class="btn-ghost" id="apCancel">Batal</button>
+      <button class="btn-blue" id="apSave">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
